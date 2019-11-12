@@ -19,38 +19,45 @@ OPTIONS = {
     'no-outline': None
 }
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0',
+}
+
 
 def get_html(url: str) -> str:
+    '''爬取网页内容'''
+
     try:
-        r = requests.get(url)
+        r = requests.get(url, headers=HEADERS)
         r.encoding = 'UTF-8'
         return r.text
     except Exception as e:
         return ''
 
 
-def collect_urls(previous_url: str, current_href: str):
-    current_url = ''
-    if current_href.startswith('../'):
-        current_url = HOMEPAGE + current_href.replace('../', '')
-    else:
-        url_parts = previous_url.split('/')
-        url_parts[-1] = current_href
-        current_url = '/'.join(url_parts)
-
+def collect_urls(current_url: str):
     with open('urls.txt', 'a', encoding='utf-8') as f:
-        f.write(current_url+'\n')
+        f.write(current_url + '\n')
 
     html = get_html(current_url)
     soup = BeautifulSoup(html, 'html.parser')
     next_link = soup.find('a', {'id': 'next-link'})
 
     if next_link is not None:
-        next_href = next_link['href']
-        collect_urls(current_url, next_href)
-    else:
-        return
+        next_href : str = next_link['href']
 
+        next_url = ''
+        if next_href.startswith('../'):
+            next_url = HOMEPAGE + next_href.replace('../', '')
+        else:
+            url_parts = current_url.split('/')
+            url_parts[-1] = next_href
+            next_url = '/'.join(url_parts)
+
+        collect_urls(next_url)
+    else:
+        print('Completed crawling.')
+        return
 
 
 def generate_pdf():
@@ -68,7 +75,7 @@ def generate_pdf():
 
     
 def main():
-    # collect_urls('https://pymotw.com/3/index.html', 'index.html')
+    collect_urls('https://pymotw.com/3/index.html')
     generate_pdf()
 
 
