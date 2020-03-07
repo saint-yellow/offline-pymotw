@@ -61,7 +61,7 @@ def collect_urls(current_url: str):
         # 递归调用自身, 像处理当前的URL那样处理下一个URL
         collect_urls(next_url)
     else:
-        # 找不到指向下一页的a标签, 表名当前页面是最后一页, 爬取完成
+        # 找不到指向下一页的a标签, 表明当前页面是最后一页, 爬取完成
         print('Completed crawling.')
         return
 
